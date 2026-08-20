@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mininet-WEB — Experimentos</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark"></div><span>Mininet-<span>WEB</span></span></div>
+  <div class="nav-title">Workspace</div><nav class="nav">
+    <a href="index.html"><span class="icon">⌂</span><span>Dashboard</span></a><a href="topologia.html"><span class="icon">◈</span><span>Topologias</span></a><a class="active" href="experimentos.html"><span class="icon">◒</span><span>Experimentos</span></a>
+  </nav>
+  <div class="nav-title">Sistema</div><nav class="nav"><a href="#"><span class="icon">⚙</span><span>Configurações</span></a><a href="#"><span class="icon">?</span><span>Documentação</span></a></nav>
+  <div class="sidebar-bottom"><div class="user"><div class="avatar">IS</div><div><strong style="font-size:12px">I. Souza</strong><small>Administrador</small></div></div></div>
+</aside>
+<main class="main">
+<header class="topbar"><div class="topbar-title">Experimentos</div><div class="status"><span class="dot"></span> Mininet conectado</div></header>
+<section class="content">
+  <div class="page-head"><div><div class="eyebrow">Experiments</div><h1>Experimentos</h1><p class="subtitle">Acompanhe os testes executados sobre as topologias provisionadas.</p></div><div class="actions"><a class="btn primary" href="#">+ Novo experimento</a></div></div>
+  <div class="grid layout-2">
+    <section class="card">
+      <div class="panel-head"><strong>Experimentos recentes</strong><span>Dados fictícios</span></div>
+      <div class="panel-body" style="padding:5px 0 0">
+      <table class="table"><thead><tr><th>Nome</th><th>Topologia</th><th>Tipo</th><th>Status</th></tr></thead><tbody>
+        <tr><td>TCP Baseline</td><td>Lab-Default</td><td>iPerf3</td><td><span class="badge success">Concluído</span></td></tr>
+        <tr><td>UDP Stress</td><td>Campus</td><td>iPerf3</td><td><span class="badge running">Executando</span></td></tr>
+        <tr><td>RTT Comparison</td><td>Chain-05</td><td>Ping</td><td><span class="badge success">Concluído</span></td></tr>
+        <tr><td>Packet Loss</td><td>Lab-Default</td><td>Netem</td><td><span class="badge">Agendado</span></td></tr>
+      </tbody></table></div>
+    </section>
+    <section class="card"><div class="panel-head"><strong>TCP Baseline</strong><span>Último resultado</span></div><div class="panel-body"><div class="grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"><div class="stat" style="background:#0c1322;border-radius:7px"><div class="stat-label">Throughput</div><div class="stat-value" style="font-size:21px">97.2 Mbps</div></div><div class="stat" style="background:#0c1322;border-radius:7px"><div class="stat-label">RTT médio</div><div class="stat-value" style="font-size:21px">12.8 ms</div></div></div>
+      <div class="chart"><svg viewBox="0 0 600 220" preserveAspectRatio="none"><polyline points="0,180 45,170 90,155 135,160 180,120 225,130 270,95 315,105 360,70 405,85 450,62 495,74 540,48 600,55" fill="none" stroke="#2f80ed" stroke-width="3"/><polyline points="0,190 600,190" fill="none" stroke="#26334d" stroke-width="1"/></svg></div></div></section>
+  </div>
+</section>
+</main></div>
+</body></html>
