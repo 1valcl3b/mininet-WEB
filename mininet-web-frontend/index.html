@@ -1,51 +1,122 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mininet-WEB — Dashboard</title><link rel="stylesheet" href="style.css"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mininet-WEB</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
-<div class="app">
-<aside class="sidebar">
-  <div class="brand"><div class="brand-mark"></div><span>Mininet-<span>WEB</span></span></div>
-  <div class="nav-title">Workspace</div>
-  <nav class="nav">
-    <a class="active" href="index.html"><span class="icon">⌂</span><span>Dashboard</span></a>
-    <a href="topologia.html"><span class="icon">◈</span><span>Topologias</span></a>
-    <a href="experimentos.html"><span class="icon">◒</span><span>Experimentos</span></a>
-  </nav>
-  <div class="nav-title">Sistema</div>
-  <nav class="nav">
-    <a href="#"><span class="icon">⚙</span><span>Configurações</span></a>
-    <a href="#"><span class="icon">?</span><span>Documentação</span></a>
-  </nav>
-  <div class="sidebar-bottom"><div class="user"><div class="avatar">IS</div><div><strong style="font-size:12px">I. Souza</strong><small>Administrador</small></div></div></div>
-</aside>
-<main class="main">
-<header class="topbar"><div class="topbar-title">Network Workspace</div><div class="status"><span class="dot"></span> Mininet conectado</div></header>
-<section class="content">
-  <div class="page-head"><div><div class="eyebrow">Visão geral</div><h1>Dashboard</h1><p class="subtitle">Gerencie topologias e acompanhe seus experimentos de rede.</p></div><div class="actions"><a class="btn" href="topologia.html">Abrir editor</a><a class="btn primary" href="topologia.html">+ Nova topologia</a></div></div>
-  <div class="grid stats">
-    <div class="card stat"><div class="stat-label">Topologias</div><div class="stat-value">12</div><div class="stat-note blue">+3 neste mês</div></div>
-    <div class="card stat"><div class="stat-label">Experimentos</div><div class="stat-value">48</div><div class="stat-note good">41 concluídos</div></div>
-    <div class="card stat"><div class="stat-label">Nós ativos</div><div class="stat-value">26</div><div class="stat-note">7 switches · 19 hosts</div></div>
-    <div class="card stat"><div class="stat-label">Throughput médio</div><div class="stat-value">82.4 <small style="font-size:13px">Mbps</small></div><div class="stat-note good">+8.2% vs. último teste</div></div>
-  </div>
-  <div class="grid layout-2">
-    <section class="card">
-      <div class="panel-head"><strong>Topologia atual</strong><span>Lab-Default · 10 nós</span></div>
-      <div class="panel-body"><div class="topology">
-        <div class="link l1"></div><div class="link l2"></div><div class="link l3"></div><div class="link l4"></div><div class="link l5"></div>
-        <div class="node n1">▣<small>h1</small></div><div class="node switch n2">⌘<small>s1</small></div><div class="node switch n3">⌘<small>s2</small></div><div class="node n4">▣<small>h4</small></div><div class="node n5">▣<small>h5</small></div>
-      </div><div class="footer-note">Representação estática para avaliação da interface.</div></div>
-    </section>
-    <section class="card">
-      <div class="panel-head"><strong>Atividade recente</strong><span>Últimas ações</span></div>
-      <div class="panel-body activity">
-        <div class="activity-item"><span class="dot"></span><div><strong>Topologia Campus criada</strong><p>há 8 minutos · 14 nós</p></div></div>
-        <div class="activity-item"><span class="dot"></span><div><strong>Experimento TCP concluído</strong><p>há 23 minutos · 97.2 Mbps</p></div></div>
-        <div class="activity-item"><span class="dot"></span><div><strong>Topologia Lab-Default iniciada</strong><p>há 1 hora · 10 nós</p></div></div>
-        <div class="activity-item"><span class="dot"></span><div><strong>Experimento UDP criado</strong><p>há 2 horas · aguardando execução</p></div></div>
-      </div>
-    </section>
-  </div>
-</section>
-</main></div>
-</body></html>
+    <div class="app">
+
+        <!-- Barra superior -->
+        <header class="topbar">
+            <div class="brand">
+                <img src="../images/mininet-web-logo.png" alt="Mininet-WEB" class="brand-logo">
+                <span>Mininet-WEB</span>
+            </div>
+
+            <nav class="menu">
+                <button>File</button>
+                <button>View</button>
+                <button>Run</button>
+                <button>Tools</button>
+                <button>Help</button>
+            </nav>
+        </header>
+
+        <!-- Área principal -->
+        <main class="workspace">
+            <div class="workspace-header">
+                <div>
+                    <span class="eyebrow">NETWORK TOPOLOGY</span>
+                    <h1>Topology Editor</h1>
+                </div>
+
+                <div class="topology-info">
+                    <span id="node-count">0 nós</span>
+                    <span id="link-count">0 enlaces</span>
+                </div>
+            </div>
+
+            <section id="canvas" class="canvas">
+                <svg id="links-layer" class="links-layer"></svg>
+
+                <!-- Os componentes criados pelo usuário serão inseridos aqui -->
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-icon">+</div>
+                    <strong>Build your topology</strong>
+                    <span>Drag components from the palette to this area.</span>
+                </div>
+            </section>
+        </main>
+
+        <!-- Painel inferior -->
+        <footer class="bottom-panel">
+
+            <section class="panel-section components-section">
+                <div class="panel-title">Components</div>
+
+                <div class="component-list">
+                    <div class="component-tool" draggable="true" data-type="host">
+                        <div class="component-icon host-icon">▣</div>
+                        <span>Host</span>
+                    </div>
+
+                    <div class="component-tool" draggable="true" data-type="switch">
+                        <div class="component-icon switch-icon">⌘</div>
+                        <span>Switch</span>
+                    </div>
+
+                    <div class="component-tool" draggable="true" data-type="controller">
+                        <div class="component-icon controller-icon">▤</div>
+                        <span>Controller</span>
+                    </div>
+
+                    <div class="component-tool" draggable="true" data-type="router">
+                        <div class="component-icon router-icon">↯</div>
+                        <span>Router</span>
+                    </div>
+
+                    <div class="component-tool" draggable="true" data-type="nat">
+                        <div class="component-icon nat-icon">☁</div>
+                        <span>NAT</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel-section actions-section">
+                <div class="panel-title">Actions</div>
+
+                <div class="actions-list">
+                    <button id="pingall-btn" class="action-btn">
+                        <span>◉</span>
+                        Pingall Test
+                    </button>
+
+                    <button id="link-btn" class="action-btn">
+                        <span>⌁</span>
+                        Enlace
+                    </button>
+
+                    <button id="delete-btn" class="action-btn danger">
+                        <span>⌫</span>
+                        Delete Selected
+                    </button>
+                </div>
+            </section>
+
+        </footer>
+
+        <div id="mode-indicator" class="mode-indicator hidden">
+            <span class="mode-dot"></span>
+            Click on two components, Press Esc to cancel.
+            <button id="cancel-link">Cancel</button>
+        </div>
+
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
