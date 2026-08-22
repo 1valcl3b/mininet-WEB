@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mininet-WEB</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+
+        <!-- Barra superior -->
+        <header class="topbar">
+            <div class="brand">
+                <img src="images/mininet-web-logo.png" alt="Mininet-WEB" class="brand-logo">
+                <span>Mininet-WEB</span>
+            </div>
+
+            <nav class="menu">
+                <button>File</button>
+                <button>View</button>
+                <button>Run</button>
+                <button>Tools</button>
+                <button>Help</button>
+            </nav>
+        </header>
+
+        <!-- Área principal -->
+        <main class="workspace">
+            <div class="workspace-header">
+                <div>
+                    <span class="eyebrow">NETWORK TOPOLOGY</span>
+                    <h1>Topology Editor</h1>
+                </div>
+
+                <div class="topology-info">
+                    <span id="node-count">0 nós</span>
+                    <span id="link-count">0 enlaces</span>
+                </div>
+            </div>
+
+            <section id="canvas" class="canvas">
+                <svg id="links-layer" class="links-layer"></svg>
+
+                <!-- Os componentes criados pelo usuário serão inseridos aqui -->
+                <div id="empty-state" class="empty-state">
+                    <div class="empty-icon">+</div>
+                    <strong>Build your topology</strong>
+                    <span>Drag components from the palette to this area.</span>
+                </div>
+            </section>
+        </main>
+
+        <!-- Painel inferior -->
+        <footer class="bottom-panel">
+
+            <section class="panel-section components-section">
+                <div class="panel-title">Components</div>
+
+                <div class="component-list">
+                    <div class="component-tool" draggable="true" data-type="host">
+                        <div class="component-icon host-icon">▣</div>
+                        <span>Host</span>
+                    </div>
+
+                    <div class="component-tool" draggable="true" data-type="switch">
+                        <div class="component-icon switch-icon">⌘</div>
+                        <span>Switch</span>
+                    </div>
+
+                    <div class="component-tool" draggable="true" data-type="controller">
+                        <div class="component-icon controller-icon">▤</div>
+                        <span>Controller</span>
+                    </div>
+
+                    <div class="component-tool" draggable="true" data-type="router">
+                        <div class="component-icon router-icon">↯</div>
+                        <span>Router</span>
+                    </div>
+
+                    <div class="component-tool" draggable="true" data-type="nat">
+                        <div class="component-icon nat-icon">☁</div>
+                        <span>NAT</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel-section actions-section">
+                <div class="panel-title">Actions</div>
+
+                <div class="actions-list">
+                    <button id="pingall-btn" class="action-btn">
+                        <span>◉</span>
+                        Pingall Test
+                    </button>
+
+                    <button id="link-btn" class="action-btn">
+                        <span>⌁</span>
+                        Enlace
+                    </button>
+
+                    <button id="delete-btn" class="action-btn danger">
+                        <span>⌫</span>
+                        Delete Selected
+                    </button>
+                </div>
+            </section>
+
+        </footer>
+
+        <div id="mode-indicator" class="mode-indicator hidden">
+            <span class="mode-dot"></span>
+            Click on two components, Press Esc to cancel.
+            <button id="cancel-link">Cancel</button>
+        </div>
+
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
