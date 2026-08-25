@@ -15,3 +15,7 @@ A proposta é fornecer uma interface gráfica e interativa para que o usuário p
 <p align="center">
   <img src="images/mininet-web-interface.png" alt="Interface do Mininet-WEB">
 </p>
+
+Informações complementares podem ser obtidas em [Informações Adicionais](./docs/info.md).
+
+
