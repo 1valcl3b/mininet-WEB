@@ -20,6 +20,7 @@ const newFileButton = document.getElementById("new-file-button");
 const openFileButton = document.getElementById("open-file-button");
 const saveFileButton = document.getElementById("save-file-button");
 const saveAsButton = document.getElementById("save-as-button");
+const exportPythonButton = document.getElementById("export-python-button");
 const toggleGridButton = document.getElementById("toggle-grid-button");
 const fitTopologyButton = document.getElementById("fit-topology-button");
 const clearSelectionButton = document.getElementById("clear-selection-button");
@@ -116,6 +117,80 @@ function downloadTopology() {
     showToast("Topology saved.");
 }
 
+function getPythonName(node) {
+    return node.dataset.id.replace(/[^a-zA-Z0-9_]/g, "_");
+}
+
+function generatePythonTopology() {
+    const nodes = [...document.querySelectorAll(".network-node")];
+    const lines = [
+        "#!/usr/bin/env python3",
+        "from mininet.net import Mininet",
+        "from mininet.node import Host, Node, OVSSwitch",
+        "from mininet.nodelib import NAT",
+        "from mininet.topo import Topo",
+        "from mininet.cli import CLI",
+        "from mininet.log import setLogLevel",
+        "",
+        "",
+        "class GeneratedTopology(Topo):",
+        "    def build(self):"
+    ];
+
+    if (!nodes.length) {
+        lines.push("        pass");
+    }
+
+    nodes.forEach(node => {
+        const name = getPythonName(node);
+        const type = node.dataset.type;
+
+        if (type === "switch") {
+            lines.push(`        self.addSwitch('${name}', cls=OVSSwitch, failMode='standalone')`);
+        } else if (type === "nat") {
+            lines.push(`        self.addNode('${name}', cls=NAT)`);
+        } else if (type === "router") {
+            lines.push(`        self.addNode('${name}', cls=Node)`);
+        } else {
+            lines.push(`        self.addHost('${name}', cls=Host)`);
+        }
+    });
+
+    links.forEach(link => {
+        lines.push(`        self.addLink('${getPythonName(link.source)}', '${getPythonName(link.target)}')`);
+    });
+
+    lines.push(
+        "",
+        "",
+        "def run():",
+        "    net = Mininet(topo=GeneratedTopology(), controller=None)",
+        "    net.start()",
+        "    CLI(net)",
+        "    net.stop()",
+        "",
+        "",
+        "if __name__ == '__main__':",
+        "    setLogLevel('info')",
+        "    run()",
+        ""
+    );
+
+    return lines.join("\n");
+}
+
+function exportPythonTopology() {
+    const blob = new Blob([generatePythonTopology()], { type: "text/x-python" });
+    const url = URL.createObjectURL(blob);
+    const download = document.createElement("a");
+
+    download.href = url;
+    download.download = "topo.py";
+    download.click();
+    URL.revokeObjectURL(url);
+    showToast("topo.py exported.");
+}
+
 function openTopology(file) {
     const reader = new FileReader();
 
@@ -180,6 +255,11 @@ saveFileButton.addEventListener("click", () => {
 
 saveAsButton.addEventListener("click", () => {
     downloadTopology();
+    closeMenus();
+});
+
+exportPythonButton.addEventListener("click", () => {
+    exportPythonTopology();
     closeMenus();
 });
 
