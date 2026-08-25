@@ -81,8 +81,16 @@ button {
     height: 100%;
 }
 
-.menu button {
+.menu-item {
+    position: relative;
+    height: 100%;
+}
+
+.menu > button,
+.menu-item > .menu-button {
+    height: 100%;
     min-width: 70px;
+    padding: 0 16px;
     border: 0;
     border-right: 1px solid var(--border);
     background: transparent;
@@ -91,8 +99,54 @@ button {
     font-size: 13px;
 }
 
-.menu button:hover {
+.menu > button:hover,
+.menu-item > .menu-button:hover,
+.menu-item > .menu-button:focus-visible,
+.dropdown-menu button:focus-visible {
     background: #e9edf1;
+    outline: 0;
+}
+
+.menu-button[aria-expanded="true"] {
+    background: #e9edf1;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 43px;
+    left: 0;
+    z-index: 10;
+    display: none;
+    min-width: 150px;
+    padding: 4px 0;
+    border: 1px solid var(--border);
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
+}
+
+.dropdown-menu.open {
+    display: block;
+}
+
+.dropdown-menu button {
+    width: 100%;
+    min-width: 0;
+    height: 32px;
+    padding: 0 14px;
+    border: 0;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    font-size: 12px;
+}
+
+.dropdown-menu button + button {
+    border-top: 1px solid #f0f2f4;
+}
+
+.canvas.grid-hidden {
+    background-image: none;
 }
 
 /* =========================
@@ -147,6 +201,7 @@ h1 {
     position: relative;
     flex: 1;
     overflow: hidden;
+    user-select: none;
     background-color: #fff;
 
     background-image:
@@ -168,6 +223,15 @@ h1 {
     height: 100%;
     pointer-events: none;
     z-index: 1;
+}
+
+.selection-box {
+    position: absolute;
+    display: none;
+    z-index: 4;
+    border: 1px solid var(--primary);
+    background: rgba(25, 118, 210, 0.1);
+    pointer-events: none;
 }
 
 .link-line {

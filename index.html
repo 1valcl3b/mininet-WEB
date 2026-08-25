@@ -17,11 +17,46 @@
             </div>
 
             <nav class="menu">
-                <button>File</button>
-                <button>View</button>
-                <button>Run</button>
-                <button>Tools</button>
-                <button>Help</button>
+                <div class="menu-item">
+                    <button id="file-menu-button" class="menu-button" data-menu-target="file-menu" aria-expanded="false" aria-haspopup="true">File</button>
+                    <div id="file-menu" class="dropdown-menu" role="menu">
+                        <button id="new-file-button" role="menuitem">New</button>
+                        <button id="open-file-button" role="menuitem">Open...</button>
+                        <button id="save-file-button" role="menuitem">Save</button>
+                        <button id="save-as-button" role="menuitem">Save As...</button>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <button class="menu-button" data-menu-target="view-menu" aria-expanded="false" aria-haspopup="true">View</button>
+                    <div id="view-menu" class="dropdown-menu" role="menu">
+                        <button id="toggle-grid-button" role="menuitem">Show Grid</button>
+                        <button id="fit-topology-button" role="menuitem">Fit Topology</button>
+                        <button id="clear-selection-button" role="menuitem">Clear Selection</button>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <button class="menu-button" data-menu-target="run-menu" aria-expanded="false" aria-haspopup="true">Run</button>
+                    <div id="run-menu" class="dropdown-menu" role="menu">
+                        <button id="run-pingall-button" role="menuitem">Pingall Test</button>
+                        <button id="start-topology-button" role="menuitem">Start Topology</button>
+                        <button id="stop-topology-button" role="menuitem">Stop Topology</button>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <button class="menu-button" data-menu-target="tools-menu" aria-expanded="false" aria-haspopup="true">Tools</button>
+                    <div id="tools-menu" class="dropdown-menu" role="menu">
+                        <button id="activate-link-button" role="menuitem">Create Link</button>
+                        <button id="delete-selected-button" role="menuitem">Delete Selected</button>
+                        <button id="reset-view-button" role="menuitem">Reset View</button>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <button class="menu-button" data-menu-target="help-menu" aria-expanded="false" aria-haspopup="true">Help</button>
+                    <div id="help-menu" class="dropdown-menu" role="menu">
+                        <button id="shortcuts-button" role="menuitem">Keyboard Shortcuts</button>
+                        <button id="about-button" role="menuitem">About Mininet-WEB</button>
+                    </div>
+                </div>
             </nav>
         </header>
 
@@ -41,6 +76,7 @@
 
             <section id="canvas" class="canvas">
                 <svg id="links-layer" class="links-layer"></svg>
+                <div id="selection-box" class="selection-box"></div>
 
                 <!-- Os componentes criados pelo usuário serão inseridos aqui -->
                 <div id="empty-state" class="empty-state">
@@ -152,6 +188,7 @@
         <div id="toast" class="toast"></div>
     </div>
 
+    <input id="file-input" type="file" accept="application/json,.json" hidden>
     <script src="script.js"></script>
 </body>
 </html>
