@@ -1,136 +1,258 @@
-const canvas = document.getElementById("canvas");
-const linksLayer = document.getElementById("links-layer");
-const emptyState = document.getElementById("empty-state");
+import {
+    aboutButton,
+    activateLinkButton,
+    applyPythonButton,
+    cancelLinkButton,
+    canvas,
+    clearSelectionButton,
+    componentList,
+    deleteButton,
+    deleteSelectedButton,
+    discardPythonButton,
+    exportPythonButton,
+    fileInput,
+    fitTopologyButton,
+    linkButton,
+    modeIndicator,
+    newFileButton,
+    openFileButton,
+    pingallButton,
+    pythonCode,
+    pythonPanel,
+    pythonStatus,
+    resetViewButton,
+    runPingallButton,
+    saveAsButton,
+    saveFileButton,
+    selectionBox,
+    shortcutsButton,
+    startTopologyButton,
+    stopTopologyButton,
+    splitViewButton,
+    toggleGridButton,
+    workspaceContent
+} from "./modules/dom.js";
+import { createNode as buildNode } from "./modules/nodes.js";
+import { createLink as buildLink, updateLinks } from "./modules/links.js";
+import { downloadTopology, exportPythonTopology, generatePythonTopology, openTopology, parsePythonTopology } from "./modules/topology-io.js";
+import { links, resetNodeSequences, selectedNodes } from "./modules/state.js";
+import { getCanvasPoint, showToast, updateCounters } from "./modules/ui.js";
+import { loadComponents } from "./modules/components.js";
 
-const nodeCount = document.getElementById("node-count");
-const linkCount = document.getElementById("link-count");
-
-const linkButton = document.getElementById("link-btn");
-const deleteButton = document.getElementById("delete-btn");
-const pingallButton = document.getElementById("pingall-btn");
-
-const modeIndicator = document.getElementById("mode-indicator");
-const cancelLinkButton = document.getElementById("cancel-link");
-const toast = document.getElementById("toast");
-
-let nodeSequence = 0;
 let selectedNode = null;
 let linkMode = false;
 let linkSource = null;
 let draggingNode = null;
-let dragOffsetX = 0;
-let dragOffsetY = 0;
+let draggingNodes = [];
+let dragStartX = 0;
+let dragStartY = 0;
+let draggingMoved = false;
+let selectingNodes = false;
+let selectionMoved = false;
+let selectionStartX = 0;
+let selectionStartY = 0;
+let pythonCodeDirty = false;
 
-const links = [];
-
-const nodeConfig = {
-    host: {
-        label: "Host",
-        symbol: "▣",
-        className: "node-host"
-    },
-    switch: {
-        label: "Switch",
-        symbol: "⌘",
-        className: "node-switch"
-    },
-    controller: {
-        label: "Controller",
-        symbol: "▤",
-        className: "node-controller"
-    },
-    router: {
-        label: "Router",
-        symbol: "↯",
-        className: "node-router"
-    },
-    nat: {
-        label: "NAT",
-        symbol: "☁",
-        className: "node-nat"
-    }
-};
-
-function showToast(message) {
-    toast.textContent = message;
-    toast.classList.add("show");
-
-    clearTimeout(showToast.timer);
-    showToast.timer = setTimeout(() => {
-        toast.classList.remove("show");
-    }, 2200);
-}
-
-function updateCounters() {
-    const count = document.querySelectorAll(".network-node").length;
-
-    nodeCount.textContent = `${count} ${count === 1 ? "nó" : "nós"}`;
-    linkCount.textContent = `${links.length} ${links.length === 1 ? "enlace" : "enlaces"}`;
-
-    emptyState.style.display = count === 0 ? "flex" : "none";
-}
-
-function getCanvasPoint(event) {
-    const rect = canvas.getBoundingClientRect();
-
-    return {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
-    };
-}
-
-function createNode(type, x, y) {
-    const config = nodeConfig[type];
-
-    if (!config) {
+function syncPythonEditor(force = false) {
+    if (pythonCodeDirty && !force) {
+        pythonStatus.textContent = "Topologia atualizada; código tem alterações pendentes.";
         return;
     }
 
-    nodeSequence++;
+    pythonCode.value = generatePythonTopology(links);
+    pythonCodeDirty = false;
+    pythonStatus.textContent = "Sincronizado";
+    pythonStatus.classList.remove("error");
+    applyPythonButton.disabled = true;
+    discardPythonButton.disabled = true;
+}
 
-    const node = document.createElement("div");
-    node.className = `network-node ${config.className}`;
-    node.dataset.type = type;
-    node.dataset.id = `${type}-${nodeSequence}`;
+function closeMenus() {
+    document.querySelectorAll(".dropdown-menu.open").forEach(menu => {
+        menu.classList.remove("open");
+    });
+    document.querySelectorAll(".menu-button[aria-expanded='true']").forEach(button => {
+        button.setAttribute("aria-expanded", "false");
+    });
+}
 
-    node.style.left = `${x - 36}px`;
-    node.style.top = `${y - 31}px`;
+document.querySelectorAll(".menu-button").forEach(button => {
+    button.addEventListener("click", event => {
+        event.stopPropagation();
+        const menu = document.getElementById(button.dataset.menuTarget);
+        const isOpen = menu.classList.contains("open");
 
-    const symbol = document.createElement("div");
-    symbol.className = "node-symbol";
-    symbol.textContent = config.symbol;
+        closeMenus();
+        if (!isOpen) {
+            menu.classList.add("open");
+            button.setAttribute("aria-expanded", "true");
+        }
+    });
+});
 
-    const name = document.createElement("div");
-    name.className = "node-name";
-    name.textContent = `${type.charAt(0).toLowerCase()}${nodeSequence}`;
+document.addEventListener("click", closeMenus);
 
-    const typeLabel = document.createElement("div");
-    typeLabel.className = "node-type";
-    typeLabel.textContent = config.label;
+splitViewButton.addEventListener("click", () => {
+    const enabled = splitViewButton.getAttribute("aria-checked") !== "true";
+    splitViewButton.setAttribute("aria-checked", String(enabled));
+    workspaceContent.classList.toggle("split", enabled);
+    pythonPanel.hidden = !enabled;
+    if (enabled) {
+        requestAnimationFrame(() => updateLinks(links));
+    }
+    closeMenus();
+});
 
-    node.appendChild(symbol);
-    node.appendChild(name);
-    node.appendChild(typeLabel);
+pythonCode.addEventListener("input", () => {
+    pythonCodeDirty = true;
+    pythonStatus.textContent = "Código editado; aplique para atualizar o diagrama.";
+    pythonStatus.classList.remove("error");
+    applyPythonButton.disabled = false;
+    discardPythonButton.disabled = false;
+});
 
-    canvas.appendChild(node);
+discardPythonButton.addEventListener("click", () => syncPythonEditor(true));
+applyPythonButton.addEventListener("click", applyPythonCode);
 
-    node.addEventListener("mousedown", startNodeDrag);
-    node.addEventListener("click", handleNodeClick);
+function clearTopology() {
+    links.forEach(link => link.element.remove());
+    links.length = 0;
+    document.querySelectorAll(".network-node").forEach(node => node.remove());
+    selectedNode = null;
+    selectedNodes.clear();
+    resetNodeSequences();
+    clearLinkMode();
+    updateCounters(links);
+    syncPythonEditor();
+}
 
-    updateCounters();
+newFileButton.addEventListener("click", () => {
+    clearTopology();
+    closeMenus();
+    showToast("New topology created.");
+});
 
+openFileButton.addEventListener("click", () => {
+    fileInput.click();
+    closeMenus();
+});
+
+fileInput.addEventListener("change", event => {
+    const [file] = event.target.files;
+    if (file) {
+        openTopology(file, { clearTopology, createNode, createLink, showToast });
+    }
+    event.target.value = "";
+});
+
+saveFileButton.addEventListener("click", () => {
+    downloadTopology(links, showToast);
+    closeMenus();
+});
+
+saveAsButton.addEventListener("click", () => {
+    downloadTopology(links, showToast);
+    closeMenus();
+});
+
+exportPythonButton.addEventListener("click", () => {
+    exportPythonTopology(links, showToast);
+    closeMenus();
+});
+
+toggleGridButton.addEventListener("click", () => {
+    const isHidden = canvas.classList.toggle("grid-hidden");
+    toggleGridButton.textContent = isHidden ? "Show Grid" : "Hide Grid";
+    closeMenus();
+});
+
+function fitTopology() {
+    const nodes = [...document.querySelectorAll(".network-node")];
+    if (!nodes.length) {
+        showToast("No components to fit.");
+        return;
+    }
+
+    const minX = Math.min(...nodes.map(node => parseFloat(node.style.left)));
+    const minY = Math.min(...nodes.map(node => parseFloat(node.style.top)));
+    const maxX = Math.max(...nodes.map(node => parseFloat(node.style.left) + node.offsetWidth));
+    const maxY = Math.max(...nodes.map(node => parseFloat(node.style.top) + node.offsetHeight));
+    const offsetX = (canvas.clientWidth - (maxX - minX)) / 2 - minX;
+    const offsetY = (canvas.clientHeight - (maxY - minY)) / 2 - minY;
+
+    nodes.forEach(node => {
+        node.style.left = `${Math.max(0, parseFloat(node.style.left) + offsetX)}px`;
+        node.style.top = `${Math.max(0, parseFloat(node.style.top) + offsetY)}px`;
+    });
+    updateLinks(links);
+    syncPythonEditor();
+    showToast("Topology fitted to view.");
+}
+
+fitTopologyButton.addEventListener("click", () => {
+    fitTopology();
+    closeMenus();
+});
+
+clearSelectionButton.addEventListener("click", () => {
+    selectNode(null);
+    closeMenus();
+    showToast("Selection cleared.");
+});
+
+runPingallButton.addEventListener("click", () => {
+    pingallButton.click();
+    closeMenus();
+});
+
+startTopologyButton.addEventListener("click", () => {
+    showToast("Topology started.");
+    closeMenus();
+});
+
+stopTopologyButton.addEventListener("click", () => {
+    showToast("Topology stopped.");
+    closeMenus();
+});
+
+activateLinkButton.addEventListener("click", () => {
+    linkButton.click();
+    closeMenus();
+});
+
+deleteSelectedButton.addEventListener("click", () => {
+    deleteButton.click();
+    closeMenus();
+});
+
+resetViewButton.addEventListener("click", () => {
+    canvas.classList.remove("grid-hidden");
+    toggleGridButton.textContent = "Hide Grid";
+    fitTopology();
+    closeMenus();
+});
+
+shortcutsButton.addEventListener("click", () => {
+    showToast("Delete removes a component. Esc cancels link mode.");
+    closeMenus();
+});
+
+aboutButton.addEventListener("click", () => {
+    showToast("Mininet-WEB - Topology Editor");
+    closeMenus();
+});
+
+function createNode(type, x, y) {
+    const node = buildNode(type, x, y, {
+        onDragStart: startNodeDrag,
+        onClick: handleNodeClick,
+        updateCounters: () => updateCounters(links)
+    });
+    syncPythonEditor();
     return node;
 }
 
-/*
- * Arrastar componentes da paleta para o canvas.
- */
-document.querySelectorAll(".component-tool").forEach(tool => {
-    tool.addEventListener("dragstart", event => {
-        event.dataTransfer.setData("component-type", tool.dataset.type);
-        event.dataTransfer.effectAllowed = "copy";
-    });
-});
+loadComponents(componentList, showToast);
 
 canvas.addEventListener("dragover", event => {
     event.preventDefault();
@@ -152,7 +274,7 @@ canvas.addEventListener("drop", event => {
         return;
     }
 
-    const point = getCanvasPoint(event);
+    const point = getCanvasPoint(canvas, event);
 
     createNode(type, point.x, point.y);
 });
@@ -171,15 +293,22 @@ function startNodeDrag(event) {
         return;
     }
 
-    const rect = node.getBoundingClientRect();
     const canvasRect = canvas.getBoundingClientRect();
 
     draggingNode = node;
 
-    dragOffsetX = event.clientX - rect.left;
-    dragOffsetY = event.clientY - rect.top;
+    if (!selectedNodes.has(node)) {
+        selectNode(node);
+    }
 
-    selectNode(node);
+    draggingNodes = [...selectedNodes].map(selectedItem => ({
+        node: selectedItem,
+        x: parseFloat(selectedItem.style.left),
+        y: parseFloat(selectedItem.style.top)
+    }));
+    dragStartX = event.clientX - canvasRect.left;
+    dragStartY = event.clientY - canvasRect.top;
+    draggingMoved = false;
 
     document.addEventListener("mousemove", dragNode);
     document.addEventListener("mouseup", stopNodeDrag);
@@ -192,23 +321,28 @@ function dragNode(event) {
 
     const canvasRect = canvas.getBoundingClientRect();
 
-    let x = event.clientX - canvasRect.left - dragOffsetX;
-    let y = event.clientY - canvasRect.top - dragOffsetY;
+    const deltaX = event.clientX - canvasRect.left - dragStartX;
+    const deltaY = event.clientY - canvasRect.top - dragStartY;
+    const minDeltaX = Math.max(...draggingNodes.map(item => -item.x));
+    const minDeltaY = Math.max(...draggingNodes.map(item => -item.y));
+    const maxDeltaX = Math.min(...draggingNodes.map(item => canvas.clientWidth - item.node.offsetWidth - item.x));
+    const maxDeltaY = Math.min(...draggingNodes.map(item => canvas.clientHeight - item.node.offsetHeight - item.y));
+    const boundedDeltaX = Math.max(minDeltaX, Math.min(deltaX, maxDeltaX));
+    const boundedDeltaY = Math.max(minDeltaY, Math.min(deltaY, maxDeltaY));
 
-    const maxX = canvas.clientWidth - draggingNode.offsetWidth;
-    const maxY = canvas.clientHeight - draggingNode.offsetHeight;
+    draggingNodes.forEach(item => {
+        item.node.style.left = `${item.x + boundedDeltaX}px`;
+        item.node.style.top = `${item.y + boundedDeltaY}px`;
+    });
+    draggingMoved = boundedDeltaX !== 0 || boundedDeltaY !== 0;
 
-    x = Math.max(0, Math.min(x, maxX));
-    y = Math.max(0, Math.min(y, maxY));
-
-    draggingNode.style.left = `${x}px`;
-    draggingNode.style.top = `${y}px`;
-
-    updateLinks();
+    updateLinks(links);
+    syncPythonEditor();
 }
 
 function stopNodeDrag() {
     draggingNode = null;
+    draggingNodes = [];
 
     document.removeEventListener("mousemove", dragNode);
     document.removeEventListener("mouseup", stopNodeDrag);
@@ -217,16 +351,105 @@ function stopNodeDrag() {
 /*
  * Seleção e modo de enlace.
  */
-function selectNode(node) {
-    document.querySelectorAll(".network-node.selected").forEach(item => {
-        item.classList.remove("selected");
-    });
+function selectNode(node, additive = false) {
+    if (!additive) {
+        selectedNodes.forEach(item => item.classList.remove("selected"));
+        selectedNodes.clear();
+    }
 
-    selectedNode = node;
+    if (!node) {
+        selectedNode = null;
+        return;
+    }
 
-    if (node) {
+    if (additive && selectedNodes.has(node)) {
+        selectedNodes.delete(node);
+        node.classList.remove("selected");
+    } else {
+        selectedNodes.add(node);
         node.classList.add("selected");
     }
+
+    selectedNode = selectedNodes.values().next().value || null;
+}
+
+function updateSelectionBox(event) {
+    const point = getCanvasPoint(canvas, event);
+    const left = Math.min(selectionStartX, point.x);
+    const top = Math.min(selectionStartY, point.y);
+    const width = Math.abs(point.x - selectionStartX);
+    const height = Math.abs(point.y - selectionStartY);
+    selectionMoved = width > 2 || height > 2;
+
+    if (!selectionMoved) {
+        return;
+    }
+
+    selectionBox.style.display = "block";
+    selectionBox.style.left = `${left}px`;
+    selectionBox.style.top = `${top}px`;
+    selectionBox.style.width = `${width}px`;
+    selectionBox.style.height = `${height}px`;
+
+    const selectionRect = {
+        left,
+        top,
+        right: left + width,
+        bottom: top + height
+    };
+
+    document.querySelectorAll(".network-node").forEach(node => {
+        const nodeRect = {
+            left: parseFloat(node.style.left),
+            top: parseFloat(node.style.top),
+            right: parseFloat(node.style.left) + node.offsetWidth,
+            bottom: parseFloat(node.style.top) + node.offsetHeight
+        };
+        const intersects = nodeRect.left < selectionRect.right &&
+            nodeRect.right > selectionRect.left &&
+            nodeRect.top < selectionRect.bottom &&
+            nodeRect.bottom > selectionRect.top;
+
+        node.classList.toggle("selected", intersects);
+        if (intersects) {
+            selectedNodes.add(node);
+        } else {
+            selectedNodes.delete(node);
+        }
+    });
+    selectedNode = selectedNodes.values().next().value || null;
+}
+
+function startSelection(event) {
+    const clickedNode = event.target.closest?.(".network-node");
+
+    if (linkMode || event.button !== 0 || clickedNode) {
+        return;
+    }
+
+    event.preventDefault();
+    const point = getCanvasPoint(canvas, event);
+    selectingNodes = true;
+    selectionMoved = false;
+    selectionStartX = point.x;
+    selectionStartY = point.y;
+    selectionBox.style.display = "none";
+
+    selectNode(null);
+
+    document.addEventListener("mousemove", updateSelectionBox);
+    document.addEventListener("mouseup", stopSelection);
+}
+
+function stopSelection() {
+    if (!selectingNodes) {
+        return;
+    }
+
+    selectingNodes = false;
+    selectionBox.style.display = "none";
+    document.removeEventListener("mousemove", updateSelectionBox);
+    document.removeEventListener("mouseup", stopSelection);
 }
 
 function handleNodeClick(event) {
@@ -235,6 +458,10 @@ function handleNodeClick(event) {
     const node = event.currentTarget;
 
     if (!linkMode) {
+        if (draggingMoved) {
+            draggingMoved = false;
+            return;
+        }
         selectNode(node);
         return;
     }
@@ -256,6 +483,8 @@ function handleNodeClick(event) {
     linkSource.classList.remove("link-source");
     linkSource = null;
 }
+
+canvas.addEventListener("mousedown", startSelection);
 
 function activateLinkMode() {
     linkMode = !linkMode;
@@ -289,97 +518,75 @@ cancelLinkButton.addEventListener("click", clearLinkMode);
  * Criar enlace entre dois nós.
  */
 function createLink(source, target) {
-    const alreadyExists = links.some(link =>
-        (link.source === source && link.target === target) ||
-        (link.source === target && link.target === source)
-    );
-
-    if (alreadyExists) {
-        showToast("These components are already connected.");
-        return;
-    }
-
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-
-    line.classList.add("link-line");
-    linksLayer.appendChild(line);
-
-    links.push({
-        source,
-        target,
-        element: line
+    const link = buildLink(source, target, links, {
+        updateLinks,
+        updateCounters: () => updateCounters(links),
+        showToast
     });
-
-    updateLinks();
-    updateCounters();
-
-    showToast("Link created.");
+    syncPythonEditor();
+    return link;
 }
 
-/*
- * Atualiza a posição dos enlaces conforme os nós são movimentados.
- */
-function updateLinks() {
-    const canvasRect = canvas.getBoundingClientRect();
+function applyPythonCode() {
+    try {
+        const topology = parsePythonTopology(pythonCode.value);
+        const positions = new Map([...document.querySelectorAll(".network-node")].map(node => [
+            node.dataset.id.replace(/[^a-zA-Z0-9_]/g, "_"),
+            { x: parseFloat(node.style.left), y: parseFloat(node.style.top) }
+        ]));
+        const nodesByName = new Map();
 
-    links.forEach(link => {
-        const sourceRect = link.source.getBoundingClientRect();
-        const targetRect = link.target.getBoundingClientRect();
+        clearTopology();
+        topology.nodes.forEach((savedNode, index) => {
+            const position = positions.get(savedNode.name) || {
+                x: 70 + (index % 4) * 150,
+                y: 70 + Math.floor(index / 4) * 130
+            };
+            const node = createNode(savedNode.type, position.x + 36, position.y + 31);
+            if (node) {
+                node.dataset.id = savedNode.id;
+                node.querySelector(".node-name").textContent = savedNode.name;
+                nodesByName.set(savedNode.name, node);
+            }
+        });
 
-        const x1 =
-            sourceRect.left +
-            sourceRect.width / 2 -
-            canvasRect.left;
-
-        const y1 =
-            sourceRect.top +
-            sourceRect.height / 2 -
-            canvasRect.top;
-
-        const x2 =
-            targetRect.left +
-            targetRect.width / 2 -
-            canvasRect.left;
-
-        const y2 =
-            targetRect.top +
-            targetRect.height / 2 -
-            canvasRect.top;
-
-        link.element.setAttribute("x1", x1);
-        link.element.setAttribute("y1", y1);
-        link.element.setAttribute("x2", x2);
-        link.element.setAttribute("y2", y2);
-    });
+        topology.links.forEach(link => createLink(nodesByName.get(link.source), nodesByName.get(link.target)));
+        pythonCodeDirty = false;
+        syncPythonEditor(true);
+        showToast("Diagrama atualizado a partir do código.");
+    } catch (error) {
+        pythonStatus.textContent = error.message;
+        pythonStatus.classList.add("error");
+    }
 }
 
 /*
  * Excluir o nó selecionado e seus enlaces.
  */
 deleteButton.addEventListener("click", () => {
-    if (!selectedNode) {
+    if (!selectedNodes.size) {
         showToast("No component selected.");
         return;
     }
 
-    const nodeToDelete = selectedNode;
-
     for (let i = links.length - 1; i >= 0; i--) {
         if (
-            links[i].source === nodeToDelete ||
-            links[i].target === nodeToDelete
+            selectedNodes.has(links[i].source) ||
+            selectedNodes.has(links[i].target)
         ) {
             links[i].element.remove();
             links.splice(i, 1);
         }
     }
 
-    nodeToDelete.remove();
+    selectedNodes.forEach(node => node.remove());
+    selectedNodes.clear();
 
     selectedNode = null;
 
-    updateCounters();
-    updateLinks();
+    updateCounters(links);
+    updateLinks(links);
+    syncPythonEditor();
 
     showToast("Componente removido.");
 });
@@ -388,9 +595,12 @@ deleteButton.addEventListener("click", () => {
  * Clique no canvas limpa a seleção.
  */
 canvas.addEventListener("click", event => {
-    if (event.target === canvas && !linkMode) {
+    const clickedNode = event.target.closest?.(".network-node");
+
+    if (!clickedNode && !linkMode && !selectionMoved) {
         selectNode(null);
     }
+    selectionMoved = false;
 });
 
 /*
@@ -407,17 +617,22 @@ pingallButton.addEventListener("click", () => {
     showToast("Pingall test executed.");
 });
 
-window.addEventListener("resize", updateLinks);
+window.addEventListener("resize", () => updateLinks(links));
 
 
 document.addEventListener("keydown", event => {
-
-   
     if (event.key === "Delete") {
         deleteButton.click();
     }
 
-    
+    const activeElement = document.activeElement;
+    const isEditing = activeElement &&
+        ["INPUT", "TEXTAREA", "SELECT"].includes(activeElement.tagName);
+
+    if (event.key.toLowerCase() === "e" && !isEditing) {
+        activateLinkMode();
+    }
+
     if (event.key === "Escape") {
         if (linkMode) {
             clearLinkMode();

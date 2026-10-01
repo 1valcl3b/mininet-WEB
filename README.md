@@ -18,4 +18,17 @@ A proposta é fornecer uma interface gráfica e interativa para que o usuário p
 
 Informações complementares podem ser obtidas em [Informações Adicionais](./docs/info.md).
 
+## Execução local
+
+1. No diretório `mininet-web-backend`, instale as dependências e inicie a API:
+
+  ```sh
+  npm install
+  npm start
+  ```
+
+  O catálogo de componentes fica em `mininet-web-backend/db.json` e é servido em `http://localhost:3000/components`.
+
+2. Sirva o conteúdo de `mininet-web-frontend` por HTTP (por exemplo, com a extensão Live Server do VS Code) e abra a página servida. O frontend usa `fetch` para carregar o catálogo da API.
+
 

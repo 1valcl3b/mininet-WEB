@@ -1,0 +1,40 @@
+export const canvas = document.getElementById("canvas");
+export const linksLayer = document.getElementById("links-layer");
+export const emptyState = document.getElementById("empty-state");
+export const selectionBox = document.getElementById("selection-box");
+export const componentList = document.getElementById("component-list");
+
+export const nodeCount = document.getElementById("node-count");
+export const linkCount = document.getElementById("link-count");
+
+export const linkButton = document.getElementById("link-btn");
+export const deleteButton = document.getElementById("delete-btn");
+export const pingallButton = document.getElementById("pingall-btn");
+
+export const modeIndicator = document.getElementById("mode-indicator");
+export const cancelLinkButton = document.getElementById("cancel-link");
+export const toast = document.getElementById("toast");
+export const fileInput = document.getElementById("file-input");
+export const newFileButton = document.getElementById("new-file-button");
+export const openFileButton = document.getElementById("open-file-button");
+export const saveFileButton = document.getElementById("save-file-button");
+export const saveAsButton = document.getElementById("save-as-button");
+export const exportPythonButton = document.getElementById("export-python-button");
+export const splitViewButton = document.getElementById("split-view-button");
+export const workspaceContent = document.getElementById("workspace-content");
+export const pythonPanel = document.getElementById("python-panel");
+export const pythonCode = document.getElementById("python-code");
+export const pythonStatus = document.getElementById("python-status");
+export const applyPythonButton = document.getElementById("apply-python-button");
+export const discardPythonButton = document.getElementById("discard-python-button");
+export const toggleGridButton = document.getElementById("toggle-grid-button");
+export const fitTopologyButton = document.getElementById("fit-topology-button");
+export const clearSelectionButton = document.getElementById("clear-selection-button");
+export const runPingallButton = document.getElementById("run-pingall-button");
+export const startTopologyButton = document.getElementById("start-topology-button");
+export const stopTopologyButton = document.getElementById("stop-topology-button");
+export const activateLinkButton = document.getElementById("activate-link-button");
+export const deleteSelectedButton = document.getElementById("delete-selected-button");
+export const resetViewButton = document.getElementById("reset-view-button");
+export const shortcutsButton = document.getElementById("shortcuts-button");
+export const aboutButton = document.getElementById("about-button");

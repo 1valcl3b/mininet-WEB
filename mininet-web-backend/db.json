@@ -1,0 +1,9 @@
+{
+  "components": [
+    { "id": "host", "type": "host", "label": "Host" },
+    { "id": "switch", "type": "switch", "label": "Switch" },
+    { "id": "controller", "type": "controller", "label": "Controller" },
+    { "id": "router", "type": "router", "label": "Router" },
+    { "id": "nat", "type": "nat", "label": "NAT" }
+  ]
+}

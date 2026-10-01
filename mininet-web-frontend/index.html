@@ -17,15 +17,52 @@
             </div>
 
             <nav class="menu">
-                <button>File</button>
-                <button>View</button>
-                <button>Run</button>
-                <button>Tools</button>
-                <button>Help</button>
+                <div class="menu-item">
+                    <button id="file-menu-button" class="menu-button" data-menu-target="file-menu" aria-expanded="false" aria-haspopup="true">File</button>
+                    <div id="file-menu" class="dropdown-menu" role="menu">
+                        <button id="new-file-button" role="menuitem">New</button>
+                        <button id="open-file-button" role="menuitem">Open...</button>
+                        <button id="save-file-button" role="menuitem">Save</button>
+                        <button id="save-as-button" role="menuitem">Save As...</button>
+                        <button id="export-python-button" role="menuitem">Export topo.py</button>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <button class="menu-button" data-menu-target="view-menu" aria-expanded="false" aria-haspopup="true">View</button>
+                    <div id="view-menu" class="dropdown-menu" role="menu">
+                        <button id="split-view-button" role="menuitemcheckbox" aria-checked="false">Split</button>
+                        <button id="toggle-grid-button" role="menuitem">Show Grid</button>
+                        <button id="fit-topology-button" role="menuitem">Fit Topology</button>
+                        <button id="clear-selection-button" role="menuitem">Clear Selection</button>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <button class="menu-button" data-menu-target="run-menu" aria-expanded="false" aria-haspopup="true">Run</button>
+                    <div id="run-menu" class="dropdown-menu" role="menu">
+                        <button id="run-pingall-button" role="menuitem">Pingall Test</button>
+                        <button id="start-topology-button" role="menuitem">Start Topology</button>
+                        <button id="stop-topology-button" role="menuitem">Stop Topology</button>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <button class="menu-button" data-menu-target="tools-menu" aria-expanded="false" aria-haspopup="true">Tools</button>
+                    <div id="tools-menu" class="dropdown-menu" role="menu">
+                        <button id="activate-link-button" role="menuitem">Create Link</button>
+                        <button id="delete-selected-button" role="menuitem">Delete Selected</button>
+                        <button id="reset-view-button" role="menuitem">Reset View</button>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <button class="menu-button" data-menu-target="help-menu" aria-expanded="false" aria-haspopup="true">Help</button>
+                    <div id="help-menu" class="dropdown-menu" role="menu">
+                        <button id="shortcuts-button" role="menuitem">Keyboard Shortcuts</button>
+                        <button id="about-button" role="menuitem">About Mininet-WEB</button>
+                    </div>
+                </div>
             </nav>
         </header>
 
-        <!-- Área principal -->
+        <!-- area principal -->
         <main class="workspace">
             <div class="workspace-header">
                 <div>
@@ -39,49 +76,39 @@
                 </div>
             </div>
 
-            <section id="canvas" class="canvas">
-                <svg id="links-layer" class="links-layer"></svg>
+            <div id="workspace-content" class="workspace-content">
+                <section id="canvas" class="canvas">
+                    <svg id="links-layer" class="links-layer"></svg>
+                    <div id="selection-box" class="selection-box"></div>
 
-                <!-- Os componentes criados pelo usuário serão inseridos aqui -->
-                <div id="empty-state" class="empty-state">
-                    <div class="empty-icon">+</div>
-                    <strong>Build your topology</strong>
-                    <span>Drag components from the palette to this area.</span>
-                </div>
-            </section>
+                    <div id="empty-state" class="empty-state">
+                        <div class="empty-icon">+</div>
+                        <strong>Build your topology</strong>
+                        <span>Drag components from the palette to this area.</span>
+                    </div>
+                </section>
+                <section id="python-panel" class="python-panel" aria-label="Código Python da topologia" hidden>
+                    <div class="python-panel-header">
+                        <strong>topo.py</strong>
+                        <span id="python-status" class="python-status">Sincronizado</span>
+                    </div>
+                    <textarea id="python-code" class="python-code" aria-label="Código Python da topologia" spellcheck="false" wrap="off"></textarea>
+                    <div class="python-panel-actions">
+                        <button id="discard-python-button" type="button" disabled>Descartar edição</button>
+                        <button id="apply-python-button" type="button" disabled>Aplicar código</button>
+                    </div>
+                </section>
+            </div>
         </main>
 
-        <!-- Painel inferior -->
+        <!-- painel inferior -->
         <footer class="bottom-panel">
 
             <section class="panel-section components-section">
                 <div class="panel-title">Components</div>
 
-                <div class="component-list">
-                    <div class="component-tool" draggable="true" data-type="host">
-                        <div class="component-icon host-icon">▣</div>
-                        <span>Host</span>
-                    </div>
-
-                    <div class="component-tool" draggable="true" data-type="switch">
-                        <div class="component-icon switch-icon">⌘</div>
-                        <span>Switch</span>
-                    </div>
-
-                    <div class="component-tool" draggable="true" data-type="controller">
-                        <div class="component-icon controller-icon">▤</div>
-                        <span>Controller</span>
-                    </div>
-
-                    <div class="component-tool" draggable="true" data-type="router">
-                        <div class="component-icon router-icon">↯</div>
-                        <span>Router</span>
-                    </div>
-
-                    <div class="component-tool" draggable="true" data-type="nat">
-                        <div class="component-icon nat-icon">☁</div>
-                        <span>NAT</span>
-                    </div>
+                <div id="component-list" class="component-list" aria-live="polite">
+                    <span class="component-load-state">Carregando componentes...</span>
                 </div>
             </section>
 
@@ -117,6 +144,7 @@
         <div id="toast" class="toast"></div>
     </div>
 
-    <script src="script.js"></script>
+    <input id="file-input" type="file" accept="application/json,.json" hidden>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

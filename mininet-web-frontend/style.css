@@ -81,8 +81,16 @@ button {
     height: 100%;
 }
 
-.menu button {
+.menu-item {
+    position: relative;
+    height: 100%;
+}
+
+.menu > button,
+.menu-item > .menu-button {
+    height: 100%;
     min-width: 70px;
+    padding: 0 16px;
     border: 0;
     border-right: 1px solid var(--border);
     background: transparent;
@@ -91,8 +99,54 @@ button {
     font-size: 13px;
 }
 
-.menu button:hover {
+.menu > button:hover,
+.menu-item > .menu-button:hover,
+.menu-item > .menu-button:focus-visible,
+.dropdown-menu button:focus-visible {
     background: #e9edf1;
+    outline: 0;
+}
+
+.menu-button[aria-expanded="true"] {
+    background: #e9edf1;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 43px;
+    left: 0;
+    z-index: 10;
+    display: none;
+    min-width: 150px;
+    padding: 4px 0;
+    border: 1px solid var(--border);
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
+}
+
+.dropdown-menu.open {
+    display: block;
+}
+
+.dropdown-menu button {
+    width: 100%;
+    min-width: 0;
+    height: 32px;
+    padding: 0 14px;
+    border: 0;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    font-size: 12px;
+}
+
+.dropdown-menu button + button {
+    border-top: 1px solid #f0f2f4;
+}
+
+.canvas.grid-hidden {
+    background-image: none;
 }
 
 /* =========================
@@ -105,6 +159,17 @@ button {
     display: flex;
     flex-direction: column;
     background: #fff;
+}
+
+.workspace-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+}
+
+.workspace-content.split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .workspace-header {
@@ -146,7 +211,9 @@ h1 {
 .canvas {
     position: relative;
     flex: 1;
+    min-width: 0;
     overflow: hidden;
+    user-select: none;
     background-color: #fff;
 
     background-image:
@@ -154,6 +221,87 @@ h1 {
         linear-gradient(90deg, #edf0f3 1px, transparent 1px);
 
     background-size: 25px 25px;
+}
+
+.python-panel,
+.python-panel[hidden] {
+    display: none;
+}
+
+.workspace-content.split .python-panel {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--border-dark);
+    background: #202830;
+}
+
+.python-panel-header,
+.python-panel-actions {
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 12px;
+    color: #e9eef3;
+    font-size: 11px;
+}
+
+.python-panel-header {
+    border-bottom: 1px solid #414b55;
+}
+
+.python-status {
+    overflow: hidden;
+    color: #aeb9c4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.python-status.error {
+    color: #ffaaa2;
+}
+
+.python-code {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    padding: 14px;
+    resize: none;
+    overflow: auto;
+    border: 0;
+    outline: 0;
+    background: #202830;
+    color: #e3eaf0;
+    font: 12px/1.55 "Cascadia Code", "Fira Code", "DejaVu Sans Mono", monospace;
+    tab-size: 4;
+    white-space: pre;
+}
+
+.python-panel-actions {
+    justify-content: flex-end;
+    border-top: 1px solid #414b55;
+}
+
+.python-panel-actions button {
+    padding: 5px 9px;
+    border: 1px solid #65717d;
+    border-radius: 3px;
+    background: #303a44;
+    color: #f0f3f6;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.python-panel-actions button:disabled {
+    opacity: 0.48;
+    cursor: default;
+}
+
+.python-panel-actions button:not(:disabled):hover {
+    background: #3c4854;
 }
 
 .canvas.drag-over {
@@ -168,6 +316,15 @@ h1 {
     height: 100%;
     pointer-events: none;
     z-index: 1;
+}
+
+.selection-box {
+    position: absolute;
+    display: none;
+    z-index: 4;
+    border: 1px solid var(--primary);
+    background: rgba(25, 118, 210, 0.1);
+    pointer-events: none;
 }
 
 .link-line {
@@ -261,8 +418,21 @@ h1 {
 }
 
 .node-symbol {
-    font-size: 19px;
-    line-height: 1;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.node-symbol svg {
+    width: 26px;
+    height: 26px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .node-name {
@@ -339,6 +509,11 @@ h1 {
     padding: 9px 12px;
 }
 
+.component-load-state {
+    color: var(--muted);
+    font-size: 12px;
+}
+
 .component-tool,
 .action-btn {
     height: 58px;
@@ -376,8 +551,21 @@ h1 {
 }
 
 .component-icon {
-    font-size: 19px;
-    line-height: 1;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.component-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .host-icon {
@@ -514,5 +702,23 @@ h1 {
     .component-list,
     .actions-list {
         overflow-x: auto;
+    }
+}
+
+@media (max-width: 700px) {
+    .workspace-content.split {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(280px, 1fr) minmax(260px, 1fr);
+        overflow: auto;
+    }
+
+    .workspace-content.split .canvas {
+        min-height: 280px;
+    }
+
+    .workspace-content.split .python-panel {
+        min-height: 260px;
+        border-top: 1px solid var(--border-dark);
+        border-left: 0;
     }
 }

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "host-1",
+      "type": "host",
+      "x": 456,
+      "y": 551
+    },
+    {
+      "id": "switch-1",
+      "type": "switch",
+      "x": 548,
+      "y": 368
+    },
+    {
+      "id": "host-2",
+      "type": "host",
+      "x": 688,
+      "y": 530
+    }
+  ],
+  "links": [
+    {
+      "source": "host-2",
+      "target": "switch-1"
+    },
+    {
+      "source": "switch-1",
+      "target": "host-1"
+    }
+  ]
+}
